@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js"></script>
+    <script>
+      function conditonalRendering() {
+        const token = localStorage.getItem("token");
+        if (token) {
+          document.getElementById("authSection").classList.add("hidden");
+          document.getElementById("logoutSection").classList.remove("hidden");
+          getInformation();
+        } else {
+          document.getElementById("authSection").classList.remove("hidden");
+          document.getElementById("logoutSection").classList.add("hidden");
+        }
+      }
+
+      async function signup() {
+        const username = document.getElementById("get_Username").value;
+        const password = document.getElementById("get_password").value;
+
+        await axios.post("http://localhost:3000/signup", {
+          username: username,
+          password: password,
+        });
+        alert("You are signed up");
+      }
+
+      async function signin() {
+        const username = document.getElementById("signin_Username").value;
+        const password = document.getElementById("signin_password").value;
+        try {
+          const response = await axios.post("http://localhost:3000/signin", {
+            username: username,
+            password: password,
+          });
+
+          localStorage.setItem("token", response.data.token);
+
+          alert("sucessfully logged in");
+          conditonalRendering();
+        } catch (error) {
+          alert("Signin failed. Please check your credentials.");
+        }
+      }
+
+      async function getInformation() {
+        try {
+          const response = await axios.get("http://localhost:3000/me", {
+            headers: {
+              token: localStorage.getItem("token"),
+            },
+          });
+          document.getElementById("information").innerHTML =
+            " username " + response.data.username;
+        } catch (error) {
+          alert("Not Getting Information ");
+        }
+      }
+
+      async function logout() {
+        localStorage.removeItem("token");
+        alert("Logged out successfully");
+        conditonalRendering();
+      }
+
+      window.onload = conditonalRendering;
+    </script>
+
+    <style>
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="authSection">
+      <div>
+        Signup
+        <input
+          id="get_Username"
+          type="text"
+          name="username"
+          placeholder="Username"
+        />
+        <input
+          id="get_password"
+          type="password"
+          name="password"
+          placeholder="Password"
+        />
+        <button onclick="signup()">Submit</button>
+      </div>
+      <div>
+        Signin
+        <input
+          id="signin_Username"
+          type="text"
+          name="username"
+          placeholder="Username"
+        />
+        <input
+          id="signin_password"
+          type="password"
+          name="password"
+          placeholder="Password"
+        />
+        <button onclick="signin()">Submit</button>
+      </div>
+    </div>
+
+    <div id="logoutSection" class="hidden">
+      <div>
+        User information:
+        <div id="information"></div>
+      </div>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </body>
+</html>
